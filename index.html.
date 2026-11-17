@@ -1,1 +1,132 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pyramid H - Top-Down</title>
+<style>
+body{font-family:Arial;background:#0d1117;color:#c9d1d9;text-align:center;padding:15px}
+.container{max-width:700px;margin:auto;background:#161b22;padding:20px;border-radius:10px}
+h1{color:#58a6ff}
+button{background:#238636;color:white;border:none;padding:11px 22px;font-size:16px;border-radius:5px;cursor:pointer;margin:8px}
+button:hover{background:#2ea043}
+input{background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:5px;padding:9px;font-size:17px;width:200px;text-align:center}
+#console{margin-top:15px;text-align:left;background:#0d1117;padding:15px;border-radius:8px;font-family:monospace;white-space:pre-wrap;max-height:350px;overflow-y:auto;border:1px solid #30363d;direction:ltr}
+.box{margin-top:15px;text-align:right;background:#0d1117;padding:13px;border-radius:8px;border:1px solid #30363d;line-height:1.7;font-size:14px}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Pyramid H - Top-Down</h1>
+<p>لا لانهاية مطلقة. القمة <b>n</b> هي سقف الوجود<br><i>No actual infinity. Apex n is the ceiling of existence.</i></p>
 
+<p>أدخل القمة n (حتى تريليون):</p>
+<input type="number" id="apex" value="100000000000" min="2" max="1000000000000000">
+<p style="font-size:13px">الجوار المحلي - Local Window (كم d نفحصو حول القمة؟)</p>
+<input type="number" id="window" value="5000" min="100" max="100000">
+<br>
+<button onclick="runTopDown()">▶ ابنِ من القمة / Build Top-Down</button>
+<button onclick="loadBig()" style="background:#1f6feb">جرب 100 مليار</button>
+
+<div id="console" dir="ltr">> جاهز... أدخل قمة كبيرة وجرب
+> Ready... Enter a huge apex</div>
+
+<div class="box">
+<b style="color:#58a6ff">كيفاش خدام؟ / How it works?</b><br>
+<b>1. بناء موضعي Local:</b> ما كنخزنوش من 1 حتى n. كنحسبو غير الجوار ديال القمة: <code>n-d</code> و <code>n+d</code> لـ d فـ Window.<br>
+<b>2. توليد تنازلي Top-Down:</b> كنبداو من n و كنرجعو باللور. ما كاين والو فوق القمة.<br>
+<b>3. اختبار أولية سريع Miller-Rabin:</b> باش نفحصو أعداد حتى تريليون فجزء من الثانية.<br>
+<i>For huge n, we don't claim total H_n bridges. We show LOCAL bridges in the window around apex. This is honest constructive math.</i>
+</div>
+<p style="font-size:12px;color:#8b949e">Fadwa (2026) - Pyramid H Language - Omega_h</p>
+</div>
+
+<script>
+// Miller-Rabin سريع للأعداد الكبيرة حتى 2^64 - deterministic
+function modPow(base, exp, mod){
+  let r = 1n;
+  base = base % mod;
+  while(exp > 0n){
+    if(exp & 1n) r = (r * base) % mod;
+    exp >>= 1n;
+    base = (base * base) % mod;
+  }
+  return r;
+}
+function isPrimeBig(n){
+  if(typeof n === 'number') n = BigInt(n);
+  if(n < 2n) return false;
+  if(n === 2n || n === 3n) return true;
+  if(n % 2n === 0n) return false;
+  // small primes trial
+  const small = [3n,5n,7n,11n,13n,17n,19n,23n,29n,31n,37n];
+  for(let p of small){
+    if(n === p) return true;
+    if(n % p === 0n) return false;
+  }
+  let d = n - 1n, s = 0n;
+  while((d & 1n) === 0n){ d >>= 1n; s++; }
+  // bases deterministic for < 2^64
+  const bases = [2n, 325n, 9375n, 28178n, 450775n, 9780504n, 1795265022n];
+  for(let a of bases){
+    if(a % n === 0n) continue;
+    let x = modPow(a, d, n);
+    if(x === 1n || x === n-1n) continue;
+    let cont = false;
+    for(let r=1n; r<s; r++){
+      x = (x*x) % n;
+      if(x === n-1n){ cont=true; break; }
+    }
+    if(cont) continue;
+    return false;
+  }
+  return true;
+}
+
+function loadBig(){
+  document.getElementById('apex').value = 100000000000;
+  document.getElementById('window').value = 5000;
+  runTopDown();
+}
+
+function runTopDown(){
+  let nStr = document.getElementById('apex').value.trim();
+  let win = parseInt(document.getElementById('window').value);
+  let out = document.getElementById('console');
+  if(!nStr || isNaN(Number(nStr))){ out.innerText = 'دخل عدد صحيح'; return; }
+  let n;
+  try{ n = BigInt(nStr); }catch(e){ out.innerText='عدد غير صالح'; return; }
+  if(n < 2n){ out.innerText='n >= 2'; return; }
+  if(win>100000) win=100000;
+  if(win<100) win=100;
+
+  out.innerText = `> Top-Down from apex n = ${n.toString()}\n> Window = ${win} (local only, not total H_n)\n> Checking d = 0 .. ${win} ...\n\n`;
+  // نخدمو على دفعات باش ما نبلوكيوش المتصفح - chunked
+  let d=0, bridges=[], checked=0;
+  let start = performance.now();
+  function chunk(){
+    let end = Math.min(d+1000, win+1);
+    for(; d<end; d++){
+      let p1 = n - BigInt(d);
+      let p2 = n + BigInt(d);
+      if(p1>1n && isPrimeBig(p1) && isPrimeBig(p2)){
+        bridges.push({d:d, p1:p1.toString(), p2:p2.toString()});
+      }
+    }
+    if(d <= win){
+      out.innerText = `> Top-Down from apex n = ${n.toString()}\n> Window = ${win}\n> Checked d: ${d} / ${win} ... Found: ${bridges.length}\n`;
+      setTimeout(chunk, 0);
+    } else {
+      let time = ((performance.now()-start)/1000).toFixed(2);
+      let txt = `> Top-Down from apex n = ${n.toString()}\n> Window = ${win} | Time: ${time}s\n> LOCAL bridges in window: ${bridges.length}\n> Local density in window: ${(bridges.length/win*100).toFixed(2)}%\n\n`;
+      bridges.slice(0,15).forEach(b=>{ txt+=`d=${b.d} -> (${b.p1}, ${b.p2})\n`; });
+      if(bridges.length>15) txt+=`\n... +${bridges.length-15} more local bridges`;
+      if(bridges.length===0) txt+=`No local bridge in this window. Try bigger window.`;
+      out.innerText = txt;
+    }
+  }
+  chunk();
+}
+</script>
+</body>
+</html>
