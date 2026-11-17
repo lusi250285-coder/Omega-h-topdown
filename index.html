@@ -1,56 +1,109 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="htmlRoot">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pyramid H - Top-Down</title>
 <style>
 body{font-family:Arial;background:#0d1117;color:#c9d1d9;text-align:center;padding:15px}
-.container{max-width:700px;margin:auto;background:#161b22;padding:20px;border-radius:10px}
-h1{color:#58a6ff}
-button{background:#238636;color:white;border:none;padding:11px 22px;font-size:16px;border-radius:5px;cursor:pointer;margin:8px}
+.container{max-width:700px;margin:auto;background:#161b22;padding:22px;border-radius:12px;position:relative}
+h1{color:#58a6ff;margin:5px}
+button{background:#238636;color:white;border:none;padding:11px 20px;font-size:15px;border-radius:6px;cursor:pointer;margin:5px}
 button:hover{background:#2ea043}
-input{background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:5px;padding:9px;font-size:17px;width:200px;text-align:center}
-#console{margin-top:15px;text-align:left;background:#0d1117;padding:15px;border-radius:8px;font-family:monospace;white-space:pre-wrap;max-height:350px;overflow-y:auto;border:1px solid #30363d;direction:ltr}
-.box{margin-top:15px;text-align:right;background:#0d1117;padding:13px;border-radius:8px;border:1px solid #30363d;line-height:1.7;font-size:14px}
+.blue{background:#1f6feb}.gray{background:#30363d}.purple{background:#8957e5}
+.lang-btn{position:absolute;top:15px;left:15px;background:#30363d;padding:6px 12px;font-size:12px;margin:0}
+input{background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:10px;font-size:17px;width:230px;text-align:center}
+#console{margin-top:15px;text-align:left;background:#0d1117;padding:15px;border-radius:8px;font-family:monospace;white-space:pre-wrap;max-height:300px;overflow-y:auto;border:1px solid #30363d;direction:ltr}
+#visual{margin-top:15px;background:#0d1117;border-radius:8px;padding:12px;border:1px solid #30363d}
+#bar{position:relative;height:28px;background:#21262d;border-radius:14px;overflow:hidden;margin-top:8px}
+.dot{position:absolute;top:6px;width:6px;height:16px;background:#58a6ff;border-radius:3px}
+.center-line{position:absolute;left:50%;top:0;width:2px;height:100%;background:#ff7b72}
+.box{margin-top:15px;text-align:right;background:#0d1117;padding:14px;border-radius:8px;border:1px solid #30363d;line-height:1.8;font-size:14px}
+html[dir="ltr"] .box{text-align:left}
+.philo{margin-top:12px;background:linear-gradient(90deg,#161b22,#21262d);border:1px solid #58a6ff55;padding:12px;border-radius:8px;font-size:14px;line-height:1.7}
 </style>
 </head>
 <body>
 <div class="container">
-<h1>Pyramid H - Top-Down</h1>
-<p>لا لانهاية مطلقة. القمة <b>n</b> هي سقف الوجود<br><i>No actual infinity. Apex n is the ceiling of existence.</i></p>
+<button class="lang-btn" onclick="toggleLanguage()" id="langBtn">English</button>
+<h1 id="t-title">Pyramid H - Top-Down</h1>
 
-<p>أدخل القمة n (حتى تريليون):</p>
-<input type="number" id="apex" value="100000000000" min="2" max="1000000000000000">
-<p style="font-size:13px">الجوار المحلي - Local Window (كم d نفحصو حول القمة؟)</p>
+<div class="philo">
+<b style="color:#58a6ff" id="t-philo-title">القمة هي باعث الوجود</b><br>
+<span id="t-philo-ar">لا لانهاية مطلقة. بمجرد ما تدخل <b>n</b>، ذاك العدد يولي هو سقف الوجود، و منو كينبثق الهرم.</span><br>
+<i id="t-philo-en">The apex is the origin of existence. No actual infinity. Once you enter n, it becomes the ceiling of existence.</i>
+</div>
+
+<p id="t-apex-label">أدخل القمة n (حتى كوادريليون):</p>
+<input type="number" id="apex" value="1000000000000000" min="2" max="1000000000000000000">
+<p style="font-size:13px" id="t-window-label">الجوار المحلي - Local Window</p>
 <input type="number" id="window" value="5000" min="100" max="100000">
 <br>
-<button onclick="runTopDown()">▶ ابنِ من القمة / Build Top-Down</button>
-<button onclick="loadBig()" style="background:#1f6feb">جرب 100 مليار</button>
+<button onclick="setWindow(5000)" class="gray">5,000</button>
+<button onclick="setWindow(10000)" class="gray">10,000</button>
+<button onclick="setWindow(50000)" class="gray">50,000</button>
+<br>
+<button onclick="runTopDown()" id="t-run-btn">▶ ابنِ من القمة / Build Top-Down</button>
+<button onclick="loadBig()" class="blue" id="t-try-btn">جرب 1 كوادريليون</button>
 
-<div id="console" dir="ltr">> جاهز... أدخل قمة كبيرة وجرب
-> Ready... Enter a huge apex</div>
+<div id="visual" style="display:none">
+<b style="color:#58a6ff;font-size:13px" id="t-visual-title">توزيع الجسور حول القمة - Bridge Distribution</b>
+<div style="font-size:11px;color:#8b949e" id="t-visual-sub">اليسار = n - Window &nbsp; | &nbsp; الوسط الأحمر = القمة n &nbsp; | &nbsp; اليمين = n + Window</div>
+<div id="bar"><div class="center-line"></div></div>
+<div id="visual-text" style="font-size:12px;margin-top:6px;color:#8b949e"></div>
+</div>
+
+<div id="console" dir="ltr">> جاهز... أدخل قمة كبيرة وجرب</div>
+<button onclick="copyResults()" class="purple" id="copyBtn" style="display:none">📋 نسخ النتائج / Copy Results</button>
 
 <div class="box">
-<b style="color:#58a6ff">كيفاش خدام؟ / How it works?</b><br>
-<b>1. بناء موضعي Local:</b> ما كنخزنوش من 1 حتى n. كنحسبو غير الجوار ديال القمة: <code>n-d</code> و <code>n+d</code> لـ d فـ Window.<br>
-<b>2. توليد تنازلي Top-Down:</b> كنبداو من n و كنرجعو باللور. ما كاين والو فوق القمة.<br>
-<b>3. اختبار أولية سريع Miller-Rabin:</b> باش نفحصو أعداد حتى تريليون فجزء من الثانية.<br>
-<i>For huge n, we don't claim total H_n bridges. We show LOCAL bridges in the window around apex. This is honest constructive math.</i>
+<b style="color:#58a6ff" id="t-how-title">كيفاش خدام؟</b><br>
+<span id="t-how-1"><b>1. بناء موضعي Local:</b> ما كنخزنوش من 1 حتى n. كنحسبو غير <code>n-d</code> و <code>n+d</code> فـ Window.<br></span>
+<span id="t-how-2"><b>2. توليد تنازلي Top-Down:</b> كنبداو من n و كنرجعو باللور. ما كاين والو فوق القمة.<br></span>
+<span id="t-how-3"><b>3. Miller-Rabin:</b> فحص أولية سريع حتى كوادريليون.<br></span>
+<i id="t-how-note">Local bridges in window, not total H_n.</i>
 </div>
-<p style="font-size:12px;color:#8b949e">Fadwa (2026) - Pyramid H Language - Omega_h</p>
+<p style="font-size:12px;color:#8b949e">Fadwa (2026) - Pyramid H Language - Omega_h Top-Down</p>
 </div>
-
 <script>
-// Miller-Rabin سريع للأعداد الكبيرة حتى 2^64 - deterministic
-function modPow(base, exp, mod){
-  let r = 1n;
-  base = base % mod;
-  while(exp > 0n){
-    if(exp & 1n) r = (r * base) % mod;
-    exp >>= 1n;
-    base = (base * base) % mod;
+const translations = {
+  ar: {dir:"rtl", langBtn:"English", title:"Pyramid H - Top-Down", philoTitle:"القمة هي باعث الوجود", philoAr:"لا لانهاية مطلقة. بمجرد ما تدخل n، ذاك العدد يولي هو سقف الوجود، و منو كينبثق الهرم.", philoEn:"The apex is the origin of existence. No actual infinity. Once you enter n, it becomes the ceiling of existence.", apexLabel:"أدخل القمة n (حتى كوادريليون):", windowLabel:"الجوار المحلي - Local Window", runBtn:"▶ ابنِ من القمة / Build Top-Down", tryBtn:"جرب 1 كوادريليون", visualTitle:"توزيع الجسور حول القمة - Bridge Distribution", visualSub:"اليسار = n - Window | الوسط الأحمر = القمة n | اليمين = n + Window", howTitle:"كيفاش خدام؟", copyBtn:"📋 نسخ النتائج / Copy Results"},
+  en: {dir:"ltr", langBtn:"العربية", title:"Pyramid H - Top-Down", philoTitle:"The Apex is the Origin of Existence", philoAr:"No actual infinity. Once you enter n, it becomes the ceiling of existence, and the pyramid emerges from it.", philoEn:"The apex is the origin of existence. No actual infinity. Once you enter n, it becomes the ceiling of existence.", apexLabel:"Enter Apex n (up to quadrillion):", windowLabel:"Local Window - الجوار المحلي", runBtn:"▶ Build Top-Down / ابنِ من القمة", tryBtn:"Try 1 Quadrillion", visualTitle:"Bridge Distribution - توزيع الجسور", visualSub:"Left = n - Window | Red Center = Apex n | Right = n + Window", howTitle:"How it works?", copyBtn:"📋 Copy Results / نسخ النتائج"}
+};
+let currentLang='ar';
+let lastText='';
+function toggleLanguage(){
+  currentLang = currentLang==='ar' ? 'en' : 'ar';
+  let t = translations[currentLang];
+  document.getElementById('htmlRoot').setAttribute('dir', t.dir);
+  document.getElementById('langBtn').innerText = t.langBtn;
+  document.getElementById('t-title').innerText = t.title;
+  document.getElementById('t-philo-title').innerText = t.philoTitle;
+  document.getElementById('t-philo-ar').innerText = t.philoAr;
+  document.getElementById('t-philo-en').innerText = t.philoEn;
+  document.getElementById('t-apex-label').innerText = t.apexLabel;
+  document.getElementById('t-window-label').innerText = t.windowLabel;
+  document.getElementById('t-run-btn').innerText = t.runBtn;
+  document.getElementById('t-try-btn').innerText = t.tryBtn;
+  document.getElementById('t-visual-title').innerText = t.visualTitle;
+  document.getElementById('t-visual-sub').innerText = t.visualSub;
+  document.getElementById('t-how-title').innerText = t.howTitle;
+  document.getElementById('copyBtn').innerText = t.copyBtn;
+  if(currentLang==='en'){
+    document.getElementById('t-how-1').innerHTML = "<b>1. Local Construction:</b> We don't store 1..n. We compute only <code>n-d</code> and <code>n+d</code> in Window.<br>";
+    document.getElementById('t-how-2').innerHTML = "<b>2. Top-Down Generation:</b> We start from n and go backwards. Nothing exists above the apex.<br>";
+    document.getElementById('t-how-3').innerHTML = "<b>3. Miller-Rabin:</b> Fast primality test up to quadrillion.<br>";
+    document.getElementById('t-how-note').innerText = "Local bridges in window, not total H_n.";
+  } else {
+    document.getElementById('t-how-1').innerHTML = "<b>1. بناء موضعي Local:</b> ما كنخزنوش من 1 حتى n. كنحسبو غير <code>n-d</code> و <code>n+d</code> فـ Window.<br>";
+    document.getElementById('t-how-2').innerHTML = "<b>2. توليد تنازلي Top-Down:</b> كنبداو من n و كنرجعو باللور. ما كاين والو فوق القمة.<br>";
+    document.getElementById('t-how-3').innerHTML = "<b>3. Miller-Rabin:</b> فحص أولية سريع حتى كوادريليون.<br>";
+    document.getElementById('t-how-note').innerText = "Local bridges in window, not total H_n.";
   }
+}
+function modPow(base, exp, mod){
+  let r = 1n; base = base % mod;
+  while(exp > 0n){ if(exp & 1n) r = (r * base) % mod; exp >>= 1n; base = (base * base) % mod; }
   return r;
 }
 function isPrimeBig(n){
@@ -58,71 +111,71 @@ function isPrimeBig(n){
   if(n < 2n) return false;
   if(n === 2n || n === 3n) return true;
   if(n % 2n === 0n) return false;
-  // small primes trial
   const small = [3n,5n,7n,11n,13n,17n,19n,23n,29n,31n,37n];
-  for(let p of small){
-    if(n === p) return true;
-    if(n % p === 0n) return false;
-  }
+  for(let p of small){ if(n === p) return true; if(n % p === 0n) return false; }
   let d = n - 1n, s = 0n;
   while((d & 1n) === 0n){ d >>= 1n; s++; }
-  // bases deterministic for < 2^64
   const bases = [2n, 325n, 9375n, 28178n, 450775n, 9780504n, 1795265022n];
   for(let a of bases){
     if(a % n === 0n) continue;
     let x = modPow(a, d, n);
     if(x === 1n || x === n-1n) continue;
     let cont = false;
-    for(let r=1n; r<s; r++){
-      x = (x*x) % n;
-      if(x === n-1n){ cont=true; break; }
-    }
+    for(let r=1n; r<s; r++){ x = (x*x) % n; if(x === n-1n){ cont=true; break; } }
     if(cont) continue;
     return false;
   }
   return true;
 }
-
-function loadBig(){
-  document.getElementById('apex').value = 100000000000;
-  document.getElementById('window').value = 5000;
-  runTopDown();
+function setWindow(w){ document.getElementById('window').value = w; }
+function loadBig(){ document.getElementById('apex').value = 1000000000000000; document.getElementById('window').value = 5000; runTopDown(); }
+function copyResults(){
+  if(!lastText) return;
+  navigator.clipboard.writeText(lastText).then(()=>{
+    let b=document.getElementById('copyBtn');
+    let old=b.innerText; b.innerText = currentLang==='ar' ? '✅ تم النسخ!' : '✅ Copied!';
+    setTimeout(()=>{ b.innerText=old; }, 2000);
+  });
 }
-
 function runTopDown(){
   let nStr = document.getElementById('apex').value.trim();
   let win = parseInt(document.getElementById('window').value);
   let out = document.getElementById('console');
-  if(!nStr || isNaN(Number(nStr))){ out.innerText = 'دخل عدد صحيح'; return; }
-  let n;
-  try{ n = BigInt(nStr); }catch(e){ out.innerText='عدد غير صالح'; return; }
+  let n; try{ n = BigInt(nStr); }catch(e){ out.innerText='عدد غير صالح'; return; }
   if(n < 2n){ out.innerText='n >= 2'; return; }
-  if(win>100000) win=100000;
-  if(win<100) win=100;
-
-  out.innerText = `> Top-Down from apex n = ${n.toString()}\n> Window = ${win} (local only, not total H_n)\n> Checking d = 0 .. ${win} ...\n\n`;
-  // نخدمو على دفعات باش ما نبلوكيوش المتصفح - chunked
-  let d=0, bridges=[], checked=0;
-  let start = performance.now();
+  if(win>100000) win=100000; if(win<100) win=100;
+  document.getElementById('visual').style.display='none';
+  document.getElementById('copyBtn').style.display='none';
+  out.innerText = `> Top-Down n = ${n.toString()}\n> Window = ${win}\n> Checking...\n`;
+  let d=0, bridges=[], start = performance.now();
   function chunk(){
     let end = Math.min(d+1000, win+1);
     for(; d<end; d++){
-      let p1 = n - BigInt(d);
-      let p2 = n + BigInt(d);
-      if(p1>1n && isPrimeBig(p1) && isPrimeBig(p2)){
-        bridges.push({d:d, p1:p1.toString(), p2:p2.toString()});
-      }
+      let p1 = n - BigInt(d); let p2 = n + BigInt(d);
+      if(p1>1n && isPrimeBig(p1) && isPrimeBig(p2)) bridges.push({d:d, p1:p1.toString(), p2:p2.toString()});
     }
-    if(d <= win){
-      out.innerText = `> Top-Down from apex n = ${n.toString()}\n> Window = ${win}\n> Checked d: ${d} / ${win} ... Found: ${bridges.length}\n`;
-      setTimeout(chunk, 0);
-    } else {
+    if(d <= win){ out.innerText = `> Top-Down n = ${n.toString()}\n> Checked d: ${d} / ${win} ... Found: ${bridges.length}\n`; setTimeout(chunk, 0); }
+    else {
       let time = ((performance.now()-start)/1000).toFixed(2);
-      let txt = `> Top-Down from apex n = ${n.toString()}\n> Window = ${win} | Time: ${time}s\n> LOCAL bridges in window: ${bridges.length}\n> Local density in window: ${(bridges.length/win*100).toFixed(2)}%\n\n`;
-      bridges.slice(0,15).forEach(b=>{ txt+=`d=${b.d} -> (${b.p1}, ${b.p2})\n`; });
-      if(bridges.length>15) txt+=`\n... +${bridges.length-15} more local bridges`;
-      if(bridges.length===0) txt+=`No local bridge in this window. Try bigger window.`;
+      let txt = `> Top-Down n = ${n.toString()}\n> Window = ${win} | Time: ${time}s\n> LOCAL bridges: ${bridges.length} | Local density: ${(bridges.length/win*100).toFixed(2)}%\n\n`;
+      bridges.slice(0,20).forEach(b=>{ txt+=`d=${b.d} -> (${b.p1}, ${b.p2})\n`; });
+      if(bridges.length>20) txt+=`\n... +${bridges.length-20} more`;
+      if(bridges.length===0) txt+=`No local bridge in this window.`;
       out.innerText = txt;
+      lastText = txt;
+      document.getElementById('copyBtn').style.display='inline-block';
+      let vis=document.getElementById('visual');
+      let bar=document.getElementById('bar');
+      vis.style.display='block';
+      bar.querySelectorAll('.dot').forEach(e=>e.remove());
+      bridges.forEach(b=>{
+        let dot=document.createElement('div');
+        dot.className='dot';
+        let pos = b.d % 2 === 0 ? 50 + (b.d/win)*48 : 50 - (b.d/win)*48;
+        dot.style.left = pos + '%';
+        bar.appendChild(dot);
+      });
+      document.getElementById('visual-text').innerText = currentLang==='ar' ? `${bridges.length} جسور في نافذة ${win} حول القمة - كل نقطة زرقاء = جسر` : `${bridges.length} bridges in window ${win} around apex - each blue dot = bridge`;
     }
   }
   chunk();
